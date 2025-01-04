@@ -1,0 +1,27 @@
+---
+- name: Backup the system configuration
+  hosts: all
+  become: true
+  vars:
+    check_string: Hello Ansible
+  tasks:
+    # Check if a string has a capital letter
+    - name: Check if string has capital letters
+      my_namespace.my_collection.check_capital_letter:
+        string: "{{ check_string }}"
+      register: result
+
+    - name: Print the result
+      ansible.builtin.debug:
+        msg: "{{ result.message }}"
+
+    # Backup configuration files with my_namespace.my_collection.backup role
+    - name: Ensure configuration files are saved
+      ansible.builtin.include_role:
+        name: my_namespace.my_collection.backup
+      vars:
+        backup_dir: /var/ansible-backup
+        backup_id: backup_etc
+        backup_files:
+          - /etc/sysconfig
+          - /etc/yum.repos.d
