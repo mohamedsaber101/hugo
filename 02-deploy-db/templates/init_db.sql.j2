@@ -1,0 +1,23 @@
+-- Create a sample database
+CREATE DATABASE IF NOT EXISTS {{database.name }};
+
+-- Switch to the sample database
+USE {{database.name }};
+
+-- Create a sample table
+CREATE TABLE IF NOT EXISTS my_table (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    product_name VARCHAR(50) NOT NULL,
+    category VARCHAR(100) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+INSERT INTO my_table (product_name, category) 
+VALUES 
+    ('Laptop', 'Electronics'),
+    ('Office Chair', 'Furniture');
+
+-- Create a dedicated database users
+CREATE USER IF NOT EXISTS '{{ database.user }}'@'%' IDENTIFIED BY '{{ database.password }}';
+GRANT ALL PRIVILEGES ON {{database.name }}.* TO '{{ database.user }}'@'%';
+FLUSH PRIVILEGES;

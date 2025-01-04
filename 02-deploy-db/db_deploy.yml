@@ -1,0 +1,83 @@
+- name: Install and configure database servers
+  hosts: db_servers
+  become: true
+
+  vars:
+    db_packages:
+      - mysql-server
+      - mysql
+    db_service: mysqld
+    db_config_file: /etc/my.cnf
+    db_port: 3306
+    database:
+      name: mydb
+      user: myuser
+      password: mypassword
+  tasks:
+    # Install required database packages
+    - name: Install database packages
+      ansible.builtin.dnf:
+        name: "{{ item }}"
+        state: present
+      loop: "{{ db_packages }}"
+
+    # Tune the directory permissions for mysqld
+    - name: Tune the permissions
+      ansible.builtin.file:
+        path: /var
+        mode: '0777'
+        recurse: true
+
+    # Start and enable database service
+    - name: Start and enable database service
+      ansible.builtin.service:
+        name: "{{ db_service }}"
+        state: started
+        enabled: true
+
+    # Deploy database configuration template
+    - name: Deploy database configuration
+      ansible.builtin.template:
+        src: templates/db_config.cnf.j2
+        dest: "{{ db_config_file }}"
+        owner: root
+        group: root
+        mode: '0644'
+      notify: Restart database service
+
+    #Deal with Firewall block
+    - name: Manage firewalld stuff
+      block:
+      # Check if firewalld is running on the system
+      - name: Check if firewalld is running
+        ansible.builtin.service_facts:
+
+      # Ensure the firewall allows necessary services
+      - name: Ensure DB server ports are open
+        ansible.posix.firewalld:
+          state: enabled
+          permanent: true
+          immediate: true
+          port: "{{ db_port }}/tcp"
+        when: 
+        - "'firewalld.service' in ansible_facts.services"
+        - ansible_facts.services['firewalld.service'].state == 'running'
+
+    # Render initialization template
+    - name: init_db.sql file is rendered
+      ansible.builtin.template:
+        src: init_db.sql.j2
+        dest: /tmp/init_db.sql
+
+    # Initialize database with SQL script
+    - name: Initialize database schema
+      ansible.builtin.shell:
+        cmd: "mysql < /tmp/init_db.sql"
+        creates: /var/lib/mysql/initialized
+
+  handlers:
+    # Restart the MySQL service when notified
+    - name: Restart database service
+      ansible.builtin.service:
+        name: "{{ db_service }}"
+        state: restarted
