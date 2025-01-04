@@ -1,3 +1,4 @@
+---
 - name: Install and configure database servers
   hosts: db_servers
   become: true
@@ -24,7 +25,7 @@
     # Tune the directory permissions for mysqld
     - name: Tune the permissions
       ansible.builtin.file:
-        path: /var
+        path: /var/log
         mode: '0777'
         recurse: true
 
@@ -45,7 +46,7 @@
         mode: '0644'
       notify: Restart database service
 
-    #Deal with Firewall block
+    # Deal with Firewall block
     - name: Manage firewalld stuff
       block:
       # Check if firewalld is running on the system

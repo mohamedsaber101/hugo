@@ -7,7 +7,6 @@
     db_packages:
       - mysql-server
       - mysql
-    db_service: mysqld
 
   tasks:
     # Removed previously installed packages
