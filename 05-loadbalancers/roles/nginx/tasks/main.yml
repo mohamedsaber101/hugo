@@ -1,0 +1,38 @@
+---
+- name: Install Nginx
+  ansible.builtin.package:
+    name: nginx
+    state: present
+
+- name: Deploy Nginx configuration
+  ansible.builtin.template:
+    src: nginx.conf.j2
+    dest: /etc/nginx/nginx.conf
+    mode: '0644'
+  notify: Reload Nginx
+
+- name: Enable and start Nginx service
+  ansible.builtin.systemd:
+    name: nginx
+    enabled: yes
+    state: started
+
+
+
+#Deal with Firewall block
+- name: Manage firewalld stuff
+  block:
+  # Check if firewalld is running on the system
+  - name: Check if firewalld is running
+    ansible.builtin.service_facts:
+
+  # Ensure the firewall allows necessary services
+  - name: Ensure web server ports are open
+    ansible.posix.firewalld:
+      state: enabled
+      permanent: true
+      immediate: true
+      port: "{{ nginx_port }}/tcp"
+    when: 
+    - "'firewalld.service' in ansible_facts.services"
+    - ansible_facts.services['firewalld.service'].state == 'running'

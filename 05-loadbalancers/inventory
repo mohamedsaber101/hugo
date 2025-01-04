@@ -1,0 +1,7 @@
+[loadbalancers]
+node3
+
+[jboss_servers]
+node1
+node2
+

@@ -1,0 +1,29 @@
+---
+- name: Install Java runtime
+  ansible.builtin.package:
+    name: java-1.8.0-openjdk-headless
+    state: present
+
+- name: Create JBoss application directory
+  ansible.builtin.file:
+    path: /opt/jboss
+    state: directory
+
+- name: Copy JBoss application JAR
+  ansible.builtin.copy:
+    src: app.jar
+    dest: /opt/jboss/app.jar
+    mode: '0644'
+
+- name: Deploy JBoss service
+  ansible.builtin.copy:
+    src: jboss.service
+    dest: /etc/systemd/system/jboss.service
+    mode: '0644'
+  notify: Reload systemd
+
+- name: Enable and start JBoss service
+  ansible.builtin.systemd:
+    name: jboss
+    enabled: yes
+    state: started

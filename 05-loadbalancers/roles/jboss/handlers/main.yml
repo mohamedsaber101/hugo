@@ -1,0 +1,8 @@
+- name: Reload systemd
+  ansible.builtin.systemd:
+    daemon_reload: yes
+
+- name: Restart JBoss service
+  ansible.builtin.systemd:
+    name: jboss
+    state: restarted

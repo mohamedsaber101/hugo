@@ -1,0 +1,11 @@
+- name: Deploy JBoss application servers
+  hosts: jboss_servers
+  become: true
+  roles:
+    - jboss
+
+- name: Configure Nginx load balancer
+  hosts: loadbalancers
+  become: true
+  roles:
+    - nginx

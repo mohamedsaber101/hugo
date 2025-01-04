@@ -1,0 +1,28 @@
+- name: Clean the environment
+  hosts: all
+  become: true
+
+  vars:
+    packages:
+      - nginx
+      - java-headless
+    services:
+    - nginx
+    - jboss
+
+  tasks:
+    # Removed previously installed packages
+    - name: Uninstall packages
+      ansible.builtin.dnf:
+        name: "{{ item }}"
+        state: absent
+      loop: "{{ packages }}"
+
+    # Stop previously enabled services
+    - name: Disable and stop services
+      ansible.builtin.systemd:    
+        name: "{{ item }}"
+        enabled: no
+        state: stopped
+      loop: "{{ services }}"
+      ignore_errors: yes
