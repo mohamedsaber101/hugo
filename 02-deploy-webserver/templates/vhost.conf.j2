@@ -1,0 +1,12 @@
+<VirtualHost *:{{ http_port }}>
+    ServerName {{ ansible_facts['hostname'] }}
+    DocumentRoot "/var/www/vhosts/{{ ansible_facts['hostname'] }}"
+
+    <Directory "/var/www/vhosts/{{ ansible_facts['hostname'] }}">
+        AllowOverride None
+        Require all granted
+    </Directory>
+
+    ErrorLog "/var/log/httpd/{{ ansible_facts['hostname'] }}_error.log"
+    CustomLog "/var/log/httpd/{{ ansible_facts['hostname'] }}_access.log" combined
+</VirtualHost>

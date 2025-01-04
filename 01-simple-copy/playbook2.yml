@@ -1,0 +1,15 @@
+---
+- name: Write system facts to a file
+  hosts: group2 #only hosts of GROUP "group2"
+  become: true
+
+  tasks:
+    - name: Write Memory and IP information to a file
+      ansible.builtin.copy:
+        dest: /tmp/facts_file.txt
+        content: |
+          Memory: {{ ansible_memtotal_mb }} MB
+          IP Address: {{ ansible_default_ipv4.address }}
+        owner: root
+        group: root
+        mode: '0644'

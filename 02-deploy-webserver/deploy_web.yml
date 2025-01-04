@@ -1,0 +1,81 @@
+---
+- name: Install and configure web servers
+  hosts: webservers
+  become: true
+
+  vars:
+    http_port: 8080
+    web_packages:
+      - httpd
+      - firewalld
+    firewall_ports:
+      - "{{ http_port }}"
+
+  tasks:
+    # Display system facts such as OS, hostname, memory, and CPU details
+    - name: Display system facts
+      ansible.builtin.debug:
+        msg:
+          - "Operating System: {{ ansible_facts['os_family'] }}"
+          - "Hostname: {{ ansible_facts['hostname'] }}"
+          - "Memory Total: {{ ansible_facts['memtotal_mb'] }} MB"
+
+
+    # Install required packages
+    - name: Install required packages
+      ansible.builtin.dnf:
+        name: "{{ item }}"
+        state: present
+      loop: "{{ web_packages }}"
+
+    # Start required services
+    - name: Start services
+      ansible.builtin.service:
+        name: "{{ item }}"
+        state: started
+        enabled: true
+      loop: "{{ web_packages }}"
+
+    # Ensure configuration for the http port
+    - name: "Configure http port {{ http_port }}"
+      ansible.builtin.lineinfile:
+        path: "/etc/httpd/conf/httpd.conf"
+        regexp: '^Listen'
+        line: "Listen {{ http_port }}"
+      notify: Restart httpd
+     
+    # Deploy the virtual host configuration template
+    - name: Deploy configuration template
+      ansible.builtin.template:
+        src: templates/vhost.conf.j2
+        dest: /etc/httpd/conf.d/vhost.conf
+        owner: root
+        group: root
+        mode: '0644'
+      notify: Restart httpd
+
+    # Copy the index.html file to the virtual host directory
+    - name: Copy index.html
+      ansible.builtin.copy:
+        src: files/
+        dest: "/var/www/vhosts/{{ ansible_facts['hostname'] }}/"
+        owner: root
+        group: root
+        mode: '0644'
+
+    # Ensure the firewall allows necessary services
+    - name: Ensure web server ports are open
+      ansible.posix.firewalld:
+        state: enabled
+        permanent: true
+        immediate: true
+        port: "{{ item }}/tcp"
+      loop: "{{ firewall_ports }}"
+      when: ansible_facts['os_family'] == 'RedHat'
+
+  handlers:
+    # Restart the HTTPD service when notified
+    - name: Restart httpd
+      ansible.builtin.service:
+        name: httpd
+        state: restarted

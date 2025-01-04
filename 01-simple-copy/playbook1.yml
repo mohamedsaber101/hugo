@@ -1,0 +1,13 @@
+---
+- name: Write a simple line to a file
+  hosts: group1 #only hosts of GROUP "group1"
+  become: true
+
+  tasks:
+    - name: Write a static line to a file
+      ansible.builtin.copy:
+        dest: /tmp/simple_file.txt
+        content: "This is a static line written by Ansible.\n"
+        owner: root
+        group: root
+        mode: '0644'

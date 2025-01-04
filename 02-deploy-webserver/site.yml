@@ -1,0 +1,6 @@
+- name: Deploy web servers
+  ansible.builtin.import_playbook: deploy_web.yml
+
+# Validate the web servers by retrieving web content
+- name: Retrieve web content
+  ansible.builtin.import_playbook: get_web_content.yml

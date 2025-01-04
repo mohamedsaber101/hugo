@@ -1,0 +1,13 @@
+---
+- name: Clean nodes
+  hosts: all
+  become: true
+
+  tasks:
+    - name: Remove previously created files
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: absent
+      loop:
+      - /tmp/simple_file.txt
+      - /tmp/facts_file.txt

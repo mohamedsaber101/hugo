@@ -1,0 +1,22 @@
+---
+- name: Test web content
+  hosts: localhost
+  tasks:
+
+    # Attempt to retrieve web content from target servers
+    - name: Retrieve web content and write to error log on failure
+      block:
+        - name: Retrieve web content
+          ansible.builtin.uri:
+            url: http://{{ item }}:8089
+            return_content: true
+          register: content
+          loop: "{{ groups['webservers'] }}"
+      rescue:
+        # Log error to a file if the retrieval fails
+        - name: Write to error file
+          ansible.builtin.lineinfile:
+            path: /home/student/02-deploy-webserver/error.log
+            line: "Error retrieving content"
+            create: true
+

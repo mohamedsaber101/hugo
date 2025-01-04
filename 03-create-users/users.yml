@@ -1,0 +1,51 @@
+---
+- name: Create multiple local users
+  hosts: infra
+  become: true
+  vars_files:
+    - vars/users_vars.yml
+
+  handlers:
+    - name: Restart sshd
+      ansible.builtin.service:
+        name: sshd
+        state: restarted
+
+  tasks:
+    # Ensure the webadmin group exists
+    - name: Add webadmin group
+      ansible.builtin.group:
+        name: webadmin
+        state: present
+
+    # Create user accounts based on variables
+    - name: Create user accounts
+      ansible.builtin.user:
+        name: "{{ item['username'] }}"
+        groups: "{{ item['groups'] }}"
+      loop: "{{ users }}"
+
+    # Add SSH authorized keys for each user
+    - name: Add authorized keys
+      ansible.posix.authorized_key:
+        user: "{{ item['username'] }}"
+        key: "{{ lookup('file', 'files/' + item['username'] + '.key.pub') }}"
+      loop: "{{ users }}"
+
+    # Configure sudo to allow passwordless access for webadmin group
+    - name: Modify sudo config to allow webadmin users sudo without a password
+      ansible.builtin.lineinfile:
+        path: /etc/sudoers.d/webadmin
+        state: present
+        create: true
+        mode: 0440
+        line: "%webadmin ALL=(ALL) NOPASSWD: ALL"
+        validate: /usr/sbin/visudo -cf %s
+
+    # Disable root login via SSH
+    - name: Disable root login via SSH
+      ansible.builtin.lineinfile:
+        dest: /etc/ssh/sshd_config
+        regexp: "^PermitRootLogin"
+        line: "PermitRootLogin no"
+      notify: Restart sshd

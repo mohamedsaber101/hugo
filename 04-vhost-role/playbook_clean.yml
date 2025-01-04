@@ -1,0 +1,17 @@
+---
+- name: Clean the environment
+  hosts: all
+  become: true
+
+  vars:
+    packages:
+      - httpd
+
+
+  tasks:
+    # Removed previously installed packages
+    - name: Uninstall packages
+      ansible.builtin.dnf:
+        name: "{{ item }}"
+        state: absent
+      loop: "{{ packages }}"

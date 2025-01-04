@@ -1,0 +1,11 @@
+---
+- name: Replace a specific string in a file
+  hosts: all,!node3
+  become: true
+
+  tasks:
+    - name: Replace 'static' with 'dynamic' in the file
+      ansible.builtin.lineinfile:
+        path: /tmp/simple_file.txt
+        regexp: 'static'
+        line: 'This is a dynamic line written by Ansible.'

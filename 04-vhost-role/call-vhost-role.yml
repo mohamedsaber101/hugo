@@ -1,0 +1,17 @@
+---
+- name: Use vhost_role role playbook
+  hosts: webservers
+  become: true
+
+  pre_tasks:
+    - name: pre_tasks message
+      ansible.builtin.debug:
+        msg: 'Ensure web server configuration.'
+
+  roles:
+    - vhost_role
+
+  post_tasks:
+    - name: post_tasks message
+      ansible.builtin.debug:
+        msg: 'Web server is configured.'
