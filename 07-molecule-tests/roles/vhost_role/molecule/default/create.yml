@@ -1,0 +1,13 @@
+---
+- name: Create Docker instances
+  hosts: localhost
+  tasks:
+    - name: Create Docker container
+      containers.podman.podman_container:
+        name: instance
+        image: "registry.access.redhat.com/ubi9/ubi"
+        state: started
+        command: /sbin/init
+        privileged: true
+        volumes:
+          - /sys/fs/cgroup:/sys/fs/cgroup:ro

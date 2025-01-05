@@ -1,0 +1,60 @@
+---
+# Ensure the Apache package is installed
+- name: Ensure httpd is installed
+  ansible.builtin.dnf:
+    name: httpd
+    state: latest
+
+# Ensure the Apache service is enabled and started
+- name: Ensure httpd is started and enabled
+  ansible.builtin.service:
+    name: httpd
+    state: started
+    enabled: true
+
+# Ensure configuration for the http port
+- name: "Configure http port {{ http_port }}"
+  ansible.builtin.lineinfile:
+    path: "/etc/httpd/conf/httpd.conf"
+    regexp: '^Listen'
+    line: "Listen {{ http_port }}"
+  notify:
+    - restart httpd
+
+# Deploy the virtual host configuration
+- name: vhost file is rendered
+  ansible.builtin.template:
+    src: vhost.conf.j2
+    dest: /etc/httpd/conf.d/vhost.conf
+    owner: root
+    group: root
+    mode: '0644'
+  notify:
+    - restart httpd
+
+# Copy the index.html file to the virtual host directory
+- name: Copy index.html
+  ansible.builtin.copy:
+    src: index.html
+    dest: "/var/www/vhosts/{{ ansible_facts['hostname'] }}/"
+    owner: root
+    group: root
+
+
+#Deal with Firewall block
+- name: Manage firewalld stuff
+  block:
+  # Check if firewalld is running on the system
+  - name: Check if firewalld is running
+    ansible.builtin.service_facts:
+
+  # Ensure the firewall allows necessary services
+  - name: Ensure web server ports are open
+    ansible.posix.firewalld:
+      state: enabled
+      permanent: true
+      immediate: true
+      port: "{{ http_port }}/tcp"
+    when: 
+    - "'firewalld.service' in ansible_facts.services"
+    - ansible_facts.services['firewalld.service'].state == 'running'
