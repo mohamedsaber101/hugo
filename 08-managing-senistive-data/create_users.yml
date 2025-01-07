@@ -1,0 +1,23 @@
+---
+- name: Create user accounts 
+  hosts: infra
+  become: true
+  vars_files:
+    - secret.yml
+  tasks:
+    - name: Creating user from secret.yml
+      ansible.builtin.user:
+        name: "{{ username }}"
+        password: "{{ password | password_hash('sha512') }}"
+      
+    - name: Ensure SSH password authentication is enabled
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: '^#PasswordAuthentication'
+        line: 'PasswordAuthentication yes'
+        state: present
+
+    - name: Restart SSH service to apply changes
+      service:
+        name: sshd
+        state: restarted
