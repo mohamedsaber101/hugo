@@ -1,0 +1,15 @@
+---
+- name: Network Connection Configuration
+  hosts: infra
+  become: true
+  vars:
+    network_connections:
+      - name: eth0
+        type: ethernet
+        state: up
+        ip:
+          address:
+            - "{{ ansible_facts['eth0']['ipv4']['address'] }}/{{ ansible_facts['eth0']['ipv4']['prefix'] }}"
+            - 192.168.1.100/24
+  roles:
+    - redhat.rhel_system_roles.network

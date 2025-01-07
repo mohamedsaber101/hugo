@@ -1,0 +1,16 @@
+---
+- name: Obtain network info for infra servers
+  hosts: infra
+  gather_facts: yes
+
+  tasks:
+
+    - name: Display eth0 primary info
+      ansible.builtin.debug:
+        msg: "The primary IP is: {{ ansible_facts['eth0']['ipv4']['address'] }}"
+
+
+    - name: Display eth0 secondary info
+      ansible.builtin.debug:
+        msg: "The first secondary IP is: {{ ansible_facts['eth0']['ipv4_secondaries'][0]['address'] }}"
+      when:  ansible_facts['eth0']['ipv4_secondaries'] is defined
