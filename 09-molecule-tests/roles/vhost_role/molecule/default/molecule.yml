@@ -1,0 +1,23 @@
+---
+dependency:
+  name: galaxy
+driver:
+  name: podman
+
+platforms:
+  - name: testing-instance
+    image: registry.access.redhat.com/ubi9/ubi
+    pre_build_image: true
+
+
+
+scenario:
+  name: default
+  test_sequence:
+    - destroy
+    - create
+    - prepare
+    - converge
+    - verify
+    - destroy
+

@@ -1,0 +1,9 @@
+---
+- name: Destroy Podman instance
+  hosts: localhost
+  gather_facts: false
+  tasks:
+    - name: Destroy Podman container
+      containers.podman.podman_container:
+        name: testing-instance
+        state: absent

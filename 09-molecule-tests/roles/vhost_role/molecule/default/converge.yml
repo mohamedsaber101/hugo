@@ -1,0 +1,8 @@
+---
+- name: Converge
+  hosts: all
+  gather_facts: true
+  vars:
+    http_port: 9090
+  roles:
+    - vhost_role

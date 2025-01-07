@@ -1,0 +1,10 @@
+---
+- name: Prepare
+  hosts: all
+  gather_facts: true
+  tasks:
+    - name: Give warning message to all users upon logging
+      ansible.builtin.lineinfile:
+        path: /root/.bashrc
+        line: "echo The server is currently being used for testing purposes. PLEASE DONT TOUCH!!"
+  
